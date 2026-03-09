@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snake · wes.dev</title>
+  <style>
+    :root {
+      --base03:  #002b36;
+      --base02:  #073642;
+      --base01:  #586e75;
+      --base00:  #657b83;
+      --base0:   #839496;
+      --base1:   #93a1a1;
+      --yellow:  #b58900;
+      --orange:  #cb4b16;
+      --red:     #dc322f;
+      --magenta: #d33682;
+      --violet:  #6c71c4;
+      --blue:    #268bd2;
+      --cyan:    #2aa198;
+      --green:   #859900;
+      /* ASU colors */
+      --asu-gold:   #FFC627;
+      --asu-maroon: #8C1D40;
+      --asu-blue:   #00A3E0;
+      --asu-green:  #78BE20;
+      --asu-orange: #FF7F32;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background: var(--base03);
+      color: var(--base0);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(7,54,66,0.9);
+      border-bottom: 1px solid var(--base01);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .logo { font-weight: 700; font-size: 1.2rem; color: var(--asu-gold); letter-spacing: 2px; }
+    nav ul { list-style: none; display: flex; gap: 1.5rem; }
+    nav ul a { color: var(--base0); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    nav ul a:hover { color: var(--asu-gold); }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: var(--asu-gold);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px rgba(255,198,39,0.4);
+    }
+
+    /* ── SCOREBOARD ── */
+    .scoreboard {
+      display: flex;
+      gap: 3rem;
+      background: var(--base02);
+      border: 1px solid var(--base01);
+      border-radius: 8px;
+      padding: 0.8rem 2.5rem;
+    }
+    .score-item { text-align: center; }
+    .score-label { font-size: 0.65rem; color: var(--base01); letter-spacing: 2px; text-transform: uppercase; }
+    .score-val { font-size: 1.8rem; font-weight: 700; color: var(--asu-gold); }
+    #best-val { color: var(--asu-blue); }
+
+    /* ── CANVAS WRAPPER ── */
+    .canvas-wrap {
+      position: relative;
+      border: 2px solid var(--base01);
+      border-radius: 4px;
+      box-shadow: 0 0 40px rgba(38,139,210,0.12), 0 0 0 1px var(--base02);
+      overflow: hidden;
+    }
+
+    canvas { display: block; background: var(--base03); }
+
+    /* overlay */
+    #overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,43,54,0.88);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      z-index: 10;
+    }
+    #overlay.hidden { display: none; }
+    .overlay-title { font-size: 2rem; color: var(--asu-gold); letter-spacing: 4px; }
+    .overlay-sub   { font-size: 0.9rem; color: var(--base0); letter-spacing: 1px; }
+    #final-score   { font-size: 1.1rem; color: var(--asu-blue); }
+
+    /* ── START BUTTON ── */
+    #start-btn {
+      margin-top: 0.5rem;
+      padding: 0.7rem 2.2rem;
+      background: var(--asu-maroon);
+      color: var(--asu-gold);
+      border: 2px solid var(--asu-gold);
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    }
+    #start-btn:hover {
+      background: var(--asu-gold);
+      color: var(--asu-maroon);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255,198,39,0.35);
+    }
+
+    /* ── CONTROLS ── */
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 48px);
+      grid-template-rows: repeat(2, 48px);
+      gap: 4px;
+      user-select: none;
+    }
+    .dpad-btn {
+      background: var(--base02);
+      border: 1px solid var(--base01);
+      border-radius: 6px;
+      color: var(--asu-gold);
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.1s, transform 0.1s;
+      touch-action: manipulation;
+    }
+    .dpad-btn:active, .dpad-btn.pressed {
+      background: var(--base01);
+      transform: scale(0.92);
+    }
+    /* grid positions */
+    .d-up    { grid-column: 2; grid-row: 1; }
+    .d-left  { grid-column: 1; grid-row: 2; }
+    .d-down  { grid-column: 2; grid-row: 2; }
+    .d-right { grid-column: 3; grid-row: 2; }
+
+    .hint { font-size: 0.72rem; color: var(--base01); letter-spacing: 1px; text-align: center; }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      font-size: 0.75rem;
+      color: var(--base01);
+      letter-spacing: 1px;
+    }
+    .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--base01);
+      font-size: 0.8rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      width: 100%;
+    }
+    footer a { color: var(--asu-maroon); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">wes.dev</div>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="game.html">Game</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+  </ul>
+</nav>
+
+<main>
+  <h1>// SNAKE //</h1>
+
+  <div class="scoreboard">
+    <div class="score-item">
+      <div class="score-label">Score</div>
+      <div class="score-val" id="score-val">0</div>
+    </div>
+    <div class="score-item">
+      <div class="score-label">Level</div>
+      <div class="score-val" id="level-val">1</div>
+    </div>
+    <div class="score-item">
+      <div class="score-label">Best</div>
+      <div class="score-val" id="best-val">0</div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="c" width="500" height="500"></canvas>
+    <div id="overlay">
+      <div class="overlay-title" id="overlay-title">SNAKE</div>
+      <div class="overlay-sub" id="overlay-sub">Navigate the grid. Don't bite yourself.</div>
+      <div id="final-score"></div>
+      <button id="start-btn">START GAME</button>
+    </div>
+  </div>
+
+  <!-- Mobile D-Pad -->
+  <div class="controls" id="dpad">
+    <button class="dpad-btn d-up"    data-dir="UP">▲</button>
+    <button class="dpad-btn d-left"  data-dir="LEFT">◀</button>
+    <button class="dpad-btn d-down"  data-dir="DOWN">▼</button>
+    <button class="dpad-btn d-right" data-dir="RIGHT">▶</button>
+  </div>
+
+  <div class="hint">Arrow Keys · WASD · or D-Pad above</div>
+
+  <div class="legend">
+    <span><span class="legend-dot" style="background:#FFC627"></span>Snake (ASU Gold)</span>
+    <span><span class="legend-dot" style="background:#8C1D40"></span>Head</span>
+    <span><span class="legend-dot" style="background:#78BE20"></span>Food</span>
+    <span><span class="legend-dot" style="background:#FF7F32"></span>Bonus</span>
+  </div>
+</main>
+
+<footer>
+  Built by <a href="https://github.com/wnflemin">wnflemin</a> · Hosted on GitHub Pages · 2026
+</footer>
+
+<script>
+  // ── CONFIG ──
+  const COLS = 25, ROWS = 25, CELL = 20;
+  const GRID_COLOR   = 'rgba(7,54,66,0.9)';
+  const GRID_LINE    = 'rgba(88,110,117,0.18)';
+  const SNAKE_COLOR  = '#FFC627'; // ASU Gold
+  const HEAD_COLOR   = '#8C1D40'; // ASU Maroon
+  const FOOD_COLOR   = '#78BE20'; // ASU Green
+  const BONUS_COLOR  = '#FF7F32'; // ASU Orange
+  const GLOW_GOLD    = 'rgba(255,198,39,0.55)';
+  const GLOW_GREEN   = 'rgba(120,190,32,0.55)';
+  const GLOW_ORANGE  = 'rgba(255,127,50,0.6)';
+
+  const canvas = document.getElementById('c');
+  const ctx    = canvas.getContext('2d');
+  canvas.width  = COLS * CELL;
+  canvas.height = ROWS * CELL;
+
+  // ── STATE ──
+  let snake, dir, nextDir, food, bonus, score, best, level, speed, loop, running;
+  best = parseInt(localStorage.getItem('snakeBest') || '0');
+  document.getElementById('best-val').textContent = best;
+
+  // ── INIT ──
+  function initGame() {
+    snake   = [{x:12, y:12}, {x:11, y:12}, {x:10, y:12}];
+    dir     = {x:1, y:0};
+    nextDir = {x:1, y:0};
+    food    = randomCell([]);
+    bonus   = null;
+    score   = 0;
+    level   = 1;
+    speed   = 130;
+    updateHUD();
+  }
+
+  function randomCell(exclude) {
+    let cell;
+    do {
+      cell = {x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS)};
+    } while (exclude.some(e => e.x===cell.x && e.y===cell.y));
+    return cell;
+  }
+
+  // ── DRAW ──
+  function drawGrid() {
+    ctx.fillStyle = GRID_COLOR;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = GRID_LINE;
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= COLS; x++) {
+      ctx.beginPath(); ctx.moveTo(x*CELL, 0); ctx.lineTo(x*CELL, canvas.height); ctx.stroke();
+    }
+    for (let y = 0; y <= ROWS; y++) {
+      ctx.beginPath(); ctx.moveTo(0, y*CELL); ctx.lineTo(canvas.width, y*CELL); ctx.stroke();
+    }
+  }
+
+  function drawCell(x, y, color, glow, radius=3) {
+    const px = x*CELL + 1, py = y*CELL + 1, sz = CELL - 2;
+    if (glow) {
+      ctx.shadowColor = glow;
+      ctx.shadowBlur  = 12;
+    }
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(px, py, sz, sz, radius);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  function drawFood(f, color, glow) {
+    const cx = f.x*CELL + CELL/2, cy = f.y*CELL + CELL/2, r = CELL/2 - 3;
+    ctx.shadowColor = glow;
+    ctx.shadowBlur  = 16;
+    ctx.fillStyle   = color;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fill();
+    // inner shine
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.beginPath();
+    ctx.arc(cx - r*0.3, cy - r*0.3, r*0.35, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  function draw() {
+    drawGrid();
+
+    // Snake body
+    for (let i = 1; i < snake.length; i++) {
+      const alpha = 1 - (i / snake.length) * 0.55;
+      ctx.globalAlpha = alpha;
+      drawCell(snake[i].x, snake[i].y, SNAKE_COLOR, GLOW_GOLD);
+    }
+    ctx.globalAlpha = 1;
+
+    // Head
+    drawCell(snake[0].x, snake[0].y, HEAD_COLOR, 'rgba(140,29,64,0.7)', 4);
+    // eyes
+    const hx = snake[0].x*CELL, hy = snake[0].y*CELL;
+    ctx.fillStyle = '#fff';
+    const eyeOffset = dir.x !== 0 ? [{dx:CELL*0.6, dy:CELL*0.25},{dx:CELL*0.6,dy:CELL*0.7}]
+                                   : [{dx:CELL*0.25,dy:CELL*0.4},{dx:CELL*0.7,dy:CELL*0.4}];
+    eyeOffset.forEach(e => {
+      ctx.beginPath();
+      ctx.arc(hx + e.dx, hy + e.dy, 2.5, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    // Food
+    drawFood(food, FOOD_COLOR, GLOW_GREEN);
+
+    // Bonus
+    if (bonus) {
+      drawFood(bonus, BONUS_COLOR, GLOW_ORANGE);
+      // pulsing ring
+      const now = Date.now();
+      const pulse = 0.5 + 0.5*Math.sin(now * 0.008);
+      ctx.strokeStyle = `rgba(255,127,50,${0.4*pulse})`;
+      ctx.lineWidth = 2;
+      ctx.shadowColor = GLOW_ORANGE;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(bonus.x*CELL+CELL/2, bonus.y*CELL+CELL/2, CELL/2-1+pulse*3, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // ── TICK ──
+  let bonusTimer = null;
+  function tick() {
+    dir = {...nextDir};
+    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+
+    // Wall collision
+    if (head.x<0 || head.x>=COLS || head.y<0 || head.y>=ROWS) { gameOver(); return; }
+    // Self collision
+    if (snake.some(s => s.x===head.x && s.y===head.y)) { gameOver(); return; }
+
+    snake.unshift(head);
+
+    // Eat food
+    if (head.x===food.x && head.y===food.y) {
+      score += 10 * level;
+      if (score > best) { best = score; localStorage.setItem('snakeBest', best); }
+      food = randomCell(snake);
+      if (score % 50 === 0) levelUp();
+      // Spawn bonus ~30% chance
+      if (!bonus && Math.random() < 0.3) {
+        bonus = randomCell(snake);
+        clearTimeout(bonusTimer);
+        bonusTimer = setTimeout(() => { bonus = null; }, 5000);
+      }
+    } else if (bonus && head.x===bonus.x && head.y===bonus.y) {
+      score += 30 * level;
+      if (score > best) { best = score; localStorage.setItem('snakeBest', best); }
+      clearTimeout(bonusTimer);
+      bonus = null;
+    } else {
+      snake.pop();
+    }
+    updateHUD();
+    draw();
+  }
+
+  function levelUp() {
+    level++;
+    speed = Math.max(50, speed - 12);
+    clearInterval(loop);
+    loop = setInterval(tick, speed);
+  }
+
+  function updateHUD() {
+    document.getElementById('score-val').textContent = score;
+    document.getElementById('level-val').textContent = level;
+    document.getElementById('best-val').textContent  = best;
+  }
+
+  // ── GAME OVER ──
+  function gameOver() {
+    running = false;
+    clearInterval(loop);
+    // flash
+    let flashes = 0;
+    const fi = setInterval(() => {
+      ctx.fillStyle = flashes++ % 2 === 0 ? 'rgba(140,29,64,0.35)' : 'transparent';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      if (flashes >= 6) { clearInterval(fi); showOverlay(true); }
+    }, 80);
+  }
+
+  function showOverlay(isDead) {
+    const overlay = document.getElementById('overlay');
+    overlay.classList.remove('hidden');
+    document.getElementById('overlay-title').textContent = isDead ? 'GAME OVER' : 'SNAKE';
+    document.getElementById('overlay-sub').textContent   = isDead ? 'The grid claims another victim.' : 'Navigate the grid. Don\'t bite yourself.';
+    document.getElementById('final-score').textContent   = isDead ? `Score: ${score}  |  Best: ${best}` : '';
+    document.getElementById('start-btn').textContent     = isDead ? 'PLAY AGAIN' : 'START GAME';
+  }
+
+  // ── START ──
+  document.getElementById('start-btn').addEventListener('click', () => {
+    document.getElementById('overlay').classList.add('hidden');
+    initGame();
+    running = true;
+    clearInterval(loop);
+    loop = setInterval(tick, speed);
+    draw();
+  });
+
+  // ── DIRECTION INPUT ──
+  const KEY_MAP = {
+    ArrowUp:'UP', ArrowDown:'DOWN', ArrowLeft:'LEFT', ArrowRight:'RIGHT',
+    w:'UP', s:'DOWN', a:'LEFT', d:'RIGHT',
+    W:'UP', S:'DOWN', A:'LEFT', D:'RIGHT',
+  };
+  const DIR_MAP = {
+    UP:{x:0,y:-1}, DOWN:{x:0,y:1}, LEFT:{x:-1,y:0}, RIGHT:{x:1,y:0}
+  };
+  const OPPOSITE = {UP:'DOWN', DOWN:'UP', LEFT:'RIGHT', RIGHT:'LEFT'};
+  function currentDirName() {
+    for (const [k,v] of Object.entries(DIR_MAP)) if (v.x===dir.x && v.y===dir.y) return k;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (!running) return;
+    const d = KEY_MAP[e.key];
+    if (d && d !== OPPOSITE[currentDirName()]) {
+      nextDir = DIR_MAP[d];
+      e.preventDefault();
+    }
+  });
+
+  // D-Pad
+  document.querySelectorAll('.dpad-btn').forEach(btn => {
+    ['touchstart','mousedown'].forEach(evt => {
+      btn.addEventListener(evt, e => {
+        e.preventDefault();
+        if (!running) return;
+        const d = btn.dataset.dir;
+        if (d !== OPPOSITE[currentDirName()]) nextDir = DIR_MAP[d];
+        btn.classList.add('pressed');
+        setTimeout(() => btn.classList.remove('pressed'), 150);
+      });
+    });
+  });
+
+  // ── SWIPE ──
+  let tx0, ty0;
+  canvas.addEventListener('touchstart', e => { tx0=e.touches[0].clientX; ty0=e.touches[0].clientY; e.preventDefault(); }, {passive:false});
+  canvas.addEventListener('touchend', e => {
+    if (!running) return;
+    const dx=e.changedTouches[0].clientX-tx0, dy=e.changedTouches[0].clientY-ty0;
+    const cur = currentDirName();
+    if (Math.abs(dx) > Math.abs(dy)) {
+      const d = dx > 0 ? 'RIGHT' : 'LEFT';
+      if (d !== OPPOSITE[cur]) nextDir = DIR_MAP[d];
+    } else {
+      const d = dy > 0 ? 'DOWN' : 'UP';
+      if (d !== OPPOSITE[cur]) nextDir = DIR_MAP[d];
+    }
+    e.preventDefault();
+  }, {passive:false});
+
+  // ── INIT DRAW (idle) ──
+  initGame();
+  draw();
+</script>
+</body>
+</html>

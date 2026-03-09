@@ -79,6 +79,10 @@
       color: #a78bfa;
     }
 
+    nav ul a.active {
+      color: #a78bfa;
+    }
+
     /* Hero */
     .hero {
       display: flex;
@@ -272,10 +276,10 @@
   <nav>
     <div class="logo">wes.dev</div>
     <ul>
-      <li><a href="#">Home</a></li>
-      <li><a href="#">Projects</a></li>
-      <li><a href="#">About</a></li>
-      <li><a href="#">Contact</a></li>
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="game.html">Game</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="https://github.com/wnflemin">GitHub</a></li>
     </ul>
   </nav>
 
@@ -295,8 +299,8 @@
       <div class="stat-label">Ideas</div>
     </div>
     <div class="stat">
-      <div class="stat-num">01</div>
-      <div class="stat-label">Repos Live</div>
+      <div class="stat-num">03</div>
+      <div class="stat-label">Pages Live</div>
     </div>
     <div class="stat">
       <div class="stat-num">☕</div>
@@ -322,6 +326,16 @@
         <div class="card-icon">🎨</div>
         <h3>Design & Code</h3>
         <p>Interested in the intersection of clean design and solid engineering. Making things look as good as they work.</p>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="location.href='game.html'">
+        <div class="card-icon">🎮</div>
+        <h3>Snake Game</h3>
+        <p>A retro Snake game built into the site — solarized grid theme, ASU colors, mobile D-pad support, and a highscore tracker.</p>
+      </div>
+      <div class="card" style="cursor:pointer" onclick="location.href='dashboard.html'">
+        <div class="card-icon">📊</div>
+        <h3>Live Dashboard</h3>
+        <p>A dev-ops style dashboard showing fake-but-fancy metrics in ASU secondary colors on a solarized grid background.</p>
       </div>
     </div>
   </section>
