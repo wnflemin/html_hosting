@@ -256,6 +256,113 @@
       line-height: 1.6;
     }
 
+    /* Featured demos */
+    .featured-section {
+      padding: 0 2rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .featured-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .featured-card {
+      position: relative;
+      border-radius: 20px;
+      padding: 2.5rem 2rem 2rem;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      transition: transform 0.25s, box-shadow 0.25s;
+      cursor: pointer;
+    }
+
+    .featured-card:hover {
+      transform: translateY(-6px);
+    }
+
+    .featured-card.game {
+      background: linear-gradient(135deg, rgba(0,43,54,0.95) 0%, rgba(7,54,66,0.9) 100%);
+      border: 1px solid rgba(255,198,39,0.35);
+      box-shadow: 0 0 0 0 rgba(255,198,39,0.2);
+    }
+    .featured-card.game:hover {
+      box-shadow: 0 16px 48px rgba(255,198,39,0.2), 0 0 0 1px rgba(255,198,39,0.4);
+    }
+
+    .featured-card.dash {
+      background: linear-gradient(135deg, rgba(0,43,54,0.95) 0%, rgba(7,54,66,0.9) 100%);
+      border: 1px solid rgba(0,163,224,0.35);
+      box-shadow: 0 0 0 0 rgba(0,163,224,0.2);
+    }
+    .featured-card.dash:hover {
+      box-shadow: 0 16px 48px rgba(0,163,224,0.2), 0 0 0 1px rgba(0,163,224,0.4);
+    }
+
+    /* subtle grid overlay on featured cards */
+    .featured-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(88,110,117,0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88,110,117,0.1) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    .featured-tag {
+      font-size: 0.65rem;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 700;
+      width: fit-content;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+    }
+    .game .featured-tag  { background: rgba(255,198,39,0.15); color: #FFC627; }
+    .dash .featured-tag  { background: rgba(0,163,224,0.15);  color: #00A3E0; }
+
+    .featured-icon { font-size: 3rem; line-height: 1; }
+
+    .featured-card h3 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #e8e8f8;
+      line-height: 1.2;
+    }
+
+    .featured-card p {
+      font-size: 0.9rem;
+      color: #7080a0;
+      line-height: 1.6;
+      max-width: 340px;
+    }
+
+    .featured-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 0.6rem 1.4rem;
+      border-radius: 8px;
+      width: fit-content;
+      transition: gap 0.2s;
+    }
+    .featured-card:hover .featured-cta { gap: 0.8rem; }
+    .game .featured-cta { background: rgba(255,198,39,0.15); color: #FFC627; border: 1px solid rgba(255,198,39,0.4); }
+    .dash .featured-cta { background: rgba(0,163,224,0.15);  color: #00A3E0; border: 1px solid rgba(0,163,224,0.4); }
+
     /* Footer */
     footer {
       text-align: center;
@@ -289,7 +396,7 @@
     <p>This is my little corner of the internet. Hosted on GitHub Pages and ready to grow into whatever I want it to be.</p>
     <div class="btn-row">
       <a href="https://github.com/wnflemin" class="btn btn-primary">View GitHub</a>
-      <a href="#" class="btn btn-secondary">Learn More</a>
+      <a href="game.html" class="btn btn-secondary">Play Snake</a>
     </div>
   </section>
 
@@ -307,6 +414,28 @@
       <div class="stat-label">Coffee / Day</div>
     </div>
   </div>
+
+  <!-- Featured Demos -->
+  <section class="featured-section">
+    <h2 class="section-title">Try It Out</h2>
+    <p class="section-sub">Two live demos — built and hosted right here on GitHub Pages.</p>
+    <div class="featured-grid">
+      <a href="game.html" class="featured-card game">
+        <div class="featured-tag">// Live Demo</div>
+        <div class="featured-icon">🎮</div>
+        <h3>Snake Game</h3>
+        <p>Playable retro Snake on a solarized grid. ASU colors, keyboard + D-pad + swipe controls, and a persistent high-score.</p>
+        <div class="featured-cta">Play Now →</div>
+      </a>
+      <a href="dashboard.html" class="featured-card dash">
+        <div class="featured-tag">// Live Demo</div>
+        <div class="featured-icon">📊</div>
+        <h3>Live Dashboard</h3>
+        <p>A dev-ops style metrics dashboard in ASU secondary colors on a solarized grid — animated counters, charts, and service status.</p>
+        <div class="featured-cta">View Dashboard →</div>
+      </a>
+    </div>
+  </section>
 
   <section class="cards-section">
     <h2 class="section-title">What I'm Up To</h2>
@@ -326,16 +455,6 @@
         <div class="card-icon">🎨</div>
         <h3>Design & Code</h3>
         <p>Interested in the intersection of clean design and solid engineering. Making things look as good as they work.</p>
-      </div>
-      <div class="card" style="cursor:pointer" onclick="location.href='game.html'">
-        <div class="card-icon">🎮</div>
-        <h3>Snake Game</h3>
-        <p>A retro Snake game built into the site — solarized grid theme, ASU colors, mobile D-pad support, and a highscore tracker.</p>
-      </div>
-      <div class="card" style="cursor:pointer" onclick="location.href='dashboard.html'">
-        <div class="card-icon">📊</div>
-        <h3>Live Dashboard</h3>
-        <p>A dev-ops style dashboard showing fake-but-fancy metrics in ASU secondary colors on a solarized grid background.</p>
       </div>
     </div>
   </section>
